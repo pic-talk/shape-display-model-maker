@@ -1,21 +1,55 @@
-var frames = [];
-var currentFrame = 0;
-var checkstatus = true;
+var frames = []; //Frames will be stored here
+var frameNames = [];
+var currentFrame = 0; //Index of currentFrame
+var checkstatus = true; //Check for rough
+
+
+function download() {
+
+  var fs = require('fs');
+  let author = document.getElementById("author");
+  let packagename = document.getElementById("packagename");
+  let modelname = document.getElementById("modelname");
+
+  frameNames.splice(currentFrame + 1, 0, modelname.value);
+  
+  var d = new Date(),  //Get the current time
+    h = (d.getHours() < 10 ? '0' : '') + d.getHours(),
+    m = (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+  let time = h + ':' + m;
+
+  var string = "$PIC-TALK Shape Display Package\n$Package: "+packagename.value+"\n$Created Time: "+time + "\n$Author: "+author.value +"\n";
+
+
+  var x = 0;
+  
+  frames.forEach(element => {
+    string += frameNames[x++] + "/";
+    element.forEach(element2 => {
+      string += element2;
+    });
+    string += "\n";
+  });
+  console.log(string);
+
+  try { fs.writeFileSync(packagename.value + ".ptsd", string, 'utf-8'); }
+  catch (e) { alert('Failed to save the file !'); }
+}
 
 
 
 function checkcontrol() {
   var checkBox = document.getElementById("check");
-  if (checkBox.checked == true){
+  if (checkBox.checked == true) {
     checkstatus = false;
   } else {
-     checkstatus = true;
+    checkstatus = true;
   }
 }
 
 
-function generate(){
-  
+function generate() {
+
   var pixels = document.querySelectorAll(".pixel");
   var heightList = [];
   pixels.forEach(element => {
@@ -25,9 +59,9 @@ function generate(){
 
   var z = document.getElementById("Text");
   var buf = ":0";
-  
+
   frames[currentFrame].forEach(element => {
-      buf += element;
+    buf += element;
   });
 
   buf += "&";
@@ -38,8 +72,8 @@ function generate(){
 
 function mouseDown(e) {                             //Increase the number of pixel
   var val = parseInt(e.target.dataset.height);
-  
-  if(checkstatus){
+
+  if (checkstatus) {
     if (e.button == 0) {
       if (val < 9) {
         val++;
@@ -51,15 +85,18 @@ function mouseDown(e) {                             //Increase the number of pix
       }
     }
   }
-  else{
+  else {
     if (e.button == 0) {
-      val= 9;
+      val = 9;
+      e.target.style.backgroundColor = "red";
     }
     else if (e.button == 2) {
-      val=0;
+      val = 0;
+
+      e.target.style.backgroundColor = "white";
     }
   }
-  
+
   e.target.dataset.height = val;
   e.target.innerText = val;
 }
@@ -71,24 +108,29 @@ function saveFrame() {
     heightList[element.dataset.pos - 1] = element.dataset.height;
     element.dataset.height = 0;
     element.innerText = 0;
+    element.style.backgroundColor = "white";
   });
   frames[currentFrame] = heightList;
   // frames.push(heightList);
 }
 
 function newFrame() {
+
+  let modelname = document.getElementById("modelname");
+
   var newFrameArray = [];
   for (let index = 0; index < 64; index++) {
     newFrameArray[index] = 0;
   }
   saveFrame();
+  frameNames.splice(currentFrame + 1, 0, modelname.value);
   frames.splice(currentFrame + 1, 0, newFrameArray);
   currentFrame++;
 
   var x = document.getElementById("mySelect");
   var option = document.createElement("option");
   option.value = currentFrame;
-  option.text = "Frame = " + (frames.length); //Insanlar
+  option.text = "Frame = " + (frames.length); //
   x.add(option);
   x.value = frames.length - 1;
 }
@@ -118,7 +160,7 @@ function onFrameSelected(e) {
 
 var port;
 
-function serialCom() {
+function serialCom() {   // Send the serial port demo application
 
   const SerialPort = require('serialport')
   port = new SerialPort('/dev/pts/3', { //dev/pts/3
