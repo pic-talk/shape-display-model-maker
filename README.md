@@ -1,4 +1,4 @@
-# electron-quick-start
+# pic-talk shape-display content builer
 
 This app builded for making models for shape-display.
 
